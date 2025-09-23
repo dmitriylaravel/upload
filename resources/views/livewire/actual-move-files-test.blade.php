@@ -1,5 +1,4 @@
 <div>
-    @filamentStyles
 
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
@@ -45,14 +44,12 @@
                 <p><strong>Method:</strong> Default FileUpload behavior</p>
                 <p><small>Standard stream copying to storage</small></p>
 
-                <input type="file" wire:model="standardFiles" multiple accept="*" style="margin: 10px 0; padding: 10px; border: 2px dashed #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                <input type="file" wire:model="standardFiles" accept="*" style="margin: 10px 0; padding: 10px; border: 2px dashed #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;">
 
-                @if(!empty($standardFiles))
+                @if($standardFiles)
                     <div style="margin: 10px 0; padding: 10px; background: #f0f9ff; border-radius: 6px;">
-                        <strong>Selected files:</strong>
-                        @foreach($standardFiles as $index => $file)
-                            <div>{{ $index + 1 }}. {{ $file->getClientOriginalName() }} ({{ number_format($file->getSize() / 1024, 1) }} KB)</div>
-                        @endforeach
+                        <strong>Selected file:</strong>
+                        <div>{{ $standardFiles->getClientOriginalName() }} ({{ number_format($standardFiles->getSize() / 1024, 1) }} KB)</div>
                     </div>
                 @endif
 
@@ -78,14 +75,12 @@
                 <p><strong>Method:</strong> <code>FileUpload::make()->moveFiles()</code></p>
                 <p><small><strong>REAL moveFiles() implementation!</strong></small></p>
 
-                <input type="file" wire:model="moveFilesFiles" multiple accept="*" style="margin: 10px 0; padding: 10px; border: 2px dashed #f59e0b; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                <input type="file" wire:model="moveFilesFiles" accept="*" style="margin: 10px 0; padding: 10px; border: 2px dashed #f59e0b; border-radius: 6px; width: 100%; box-sizing: border-box;">
 
-                @if(!empty($moveFilesFiles))
+                @if($moveFilesFiles)
                     <div style="margin: 10px 0; padding: 10px; background: #fefdf0; border-radius: 6px;">
-                        <strong>Selected files:</strong>
-                        @foreach($moveFilesFiles as $index => $file)
-                            <div>{{ $index + 1 }}. {{ $file->getClientOriginalName() }} ({{ number_format($file->getSize() / 1024, 1) }} KB)</div>
-                        @endforeach
+                        <strong>Selected file:</strong>
+                        <div>{{ $moveFilesFiles->getClientOriginalName() }} ({{ number_format($moveFilesFiles->getSize() / 1024, 1) }} KB)</div>
                     </div>
                 @endif
 
@@ -128,5 +123,4 @@
 
    
 
-    @filamentScripts
 </div>
