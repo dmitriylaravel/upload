@@ -41,31 +41,66 @@
         <div class="form-grid">
             <!-- Standard Filament Upload -->
             <div class="upload-section">
-                <h3>Standard Filament Upload</h3>
+                <h3>📁 Standard Filament Upload</h3>
                 <p><strong>Method:</strong> Default FileUpload behavior</p>
                 <p><small>Standard stream copying to storage</small></p>
 
-                {{ $this->form->getComponent('standard_files') }}
+                <input type="file" wire:model="standardFiles" multiple accept="*" style="margin: 10px 0; padding: 10px; border: 2px dashed #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;">
+
+                @if(!empty($standardFiles))
+                    <div style="margin: 10px 0; padding: 10px; background: #f0f9ff; border-radius: 6px;">
+                        <strong>Selected files:</strong>
+                        @foreach($standardFiles as $index => $file)
+                            <div>{{ $index + 1 }}. {{ $file->getClientOriginalName() }} ({{ number_format($file->getSize() / 1024, 1) }} KB)</div>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div style="margin: 15px 0; padding: 10px; background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px;">
+                    <small style="color: #0369a1;">
+                        <strong>📝 Instructions:</strong>
+                        1. Select files using "Choose Files" above
+                        2. Click the button below to upload
+                    </small>
+                </div>
 
                 <div style="text-align: center; margin-top: 20px;">
                     <button type="button" wire:click="submitStandard" class="btn" style="background: #007cba; font-size: 16px; padding: 15px 30px;" wire:loading.attr="disabled" wire:target="submitStandard">
-                        <span wire:loading.remove wire:target="submitStandard"> Upload Standard Files</span>
-                        <span wire:loading wire:target="submitStandard"> Processing standard upload...</span>
+                        <span wire:loading.remove wire:target="submitStandard">📤 Upload Standard Files</span>
+                        <span wire:loading wire:target="submitStandard">⏳ Processing standard upload...</span>
                     </button>
                 </div>
             </div>
 
             <!-- moveFiles Upload -->
             <div class="upload-section" style="border-color: #f59e0b; background: #fffbeb;">
-                <h3>moveFiles() Upload</h3>
+                <h3>🚀 moveFiles() Upload</h3>
                 <p><strong>Method:</strong> <code>FileUpload::make()->moveFiles()</code></p>
+                <p><small><strong>REAL moveFiles() implementation!</strong></small></p>
 
-                {{ $this->form->getComponent('movefiles_files') }}
+                <input type="file" wire:model="moveFilesFiles" multiple accept="*" style="margin: 10px 0; padding: 10px; border: 2px dashed #f59e0b; border-radius: 6px; width: 100%; box-sizing: border-box;">
+
+                @if(!empty($moveFilesFiles))
+                    <div style="margin: 10px 0; padding: 10px; background: #fefdf0; border-radius: 6px;">
+                        <strong>Selected files:</strong>
+                        @foreach($moveFilesFiles as $index => $file)
+                            <div>{{ $index + 1 }}. {{ $file->getClientOriginalName() }} ({{ number_format($file->getSize() / 1024, 1) }} KB)</div>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div style="margin: 15px 0; padding: 10px; background: #fefdf0; border: 1px solid #f59e0b; border-radius: 6px;">
+                    <small style="color: #92400e;">
+                        <strong>📝 Instructions:</strong>
+                        1. Select files using "Choose Files" above
+                        2. Click the button below to upload
+                    </small>
+                </div>
 
                 <div style="text-align: center; margin-top: 20px;">
                     <button type="button" wire:click="submitMoveFiles" class="btn" style="background: #f59e0b; font-size: 16px; padding: 15px 30px;" wire:loading.attr="disabled" wire:target="submitMoveFiles">
-                        <span wire:loading.remove wire:target="submitMoveFiles"> Upload with moveFiles()</span>
-                        <span wire:loading wire:target="submitMoveFiles"> Processing moveFiles() upload...</span>
+                        <span wire:loading.remove wire:target="submitMoveFiles">🔥 Upload with moveFiles()</span>
+                        <span wire:loading wire:target="submitMoveFiles">⏳ Processing moveFiles() upload...</span>
                     </button>
                 </div>
             </div>

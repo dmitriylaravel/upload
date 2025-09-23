@@ -4,51 +4,31 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Schemas\Schema;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class ActualMoveFilesTest extends Component implements HasForms
+class ActualMoveFilesTest extends Component
 {
-    use WithFileUploads, InteractsWithForms;
+    use WithFileUploads;
 
-    public ?array $data = [];
+    public $standardFiles = [];
+    public $moveFilesFiles = [];
     public array $logs = [];
 
     public function mount(): void
     {
-        $this->form->fill();
-        $this->addLog('Test initialized - comparing default vs ACTUAL moveFiles()');
+        $this->addLog('Test initialized - comparing standard vs moveFiles() approaches');
     }
 
-    protected function getFormSchema(): array
+    public function updatedStandardFiles()
     {
-        return [
-            FileUpload::make('standard_files')
-                ->label('Standard Filament Upload')
-                ->directory('large-files')
-                ->maxSize(2048000) // 2GB
-                ->multiple()
-                ->acceptedFileTypes(['*'])
-                ->helperText('Standard Filament upload behavior'),
-
-            FileUpload::make('movefiles_files')
-                ->label('Filament Upload with moveFiles()')
-                ->moveFiles() // THIS IS THE ACTUAL MOVEFILES
-                ->directory('large-files')
-                ->maxSize(2048000) // 2GB
-                ->multiple()
-                ->acceptedFileTypes(['*'])
-                ->helperText('ACTUAL Filament moveFiles() implementation'),
-        ];
+        $this->addLog('Standard files updated: ' . count($this->standardFiles) . ' files');
     }
 
-    protected function getFormStatePath(): string
+    public function updatedMoveFilesFiles()
     {
-        return 'data';
+        $this->addLog('MoveFiles files updated: ' . count($this->moveFilesFiles) . ' files');
     }
 
     private function addLog(string $message, string $type = 'info'): void
@@ -64,22 +44,33 @@ class ActualMoveFilesTest extends Component implements HasForms
     public function submitStandard()
     {
         $this->addLog('=== PROCESSING STANDARD UPLOAD METHOD ===');
-        $data = $this->form->getState();
 
-        // Process standard files only
-        if (isset($data['standard_files']) && !empty($data['standard_files'])) {
-            $this->addLog('🔄 Standard upload: ' . count($data['standard_files']) . ' files');
-            foreach ($data['standard_files'] as $index => $filePath) {
-                $this->addLog("✅ Standard file #$index: $filePath");
-                if (Storage::exists($filePath)) {
-                    $size = Storage::size($filePath);
-                    $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
-                    $this->addLog("📁 Method: Standard Filament upload (copies stream)");
-                }
+        try {
+            if (empty($this->standardFiles)) {
+                $this->addLog('⚠️ No standard files selected.');
+                session()->flash('error', 'Please select files using the file chooser above before clicking this button.');
+                return;
             }
-            session()->flash('message', "Standard upload completed! " . count($data['standard_files']) . " files processed");
-        } else {
-            session()->flash('error', 'No files were selected for standard upload');
+
+            $this->addLog('🔄 Standard upload: ' . count($this->standardFiles) . ' files found');
+
+            foreach ($this->standardFiles as $index => $file) {
+                $this->addLog("✅ Processing standard file #$index: " . $file->getClientOriginalName());
+
+                // Standard store() method - copies the file
+                $path = $file->store('large-files', 'public');
+                $this->addLog("📁 Stored to: $path");
+
+                $size = Storage::disk('public')->size($path);
+                $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
+                $this->addLog("📁 Method: Standard Livewire store() - copies file to final location");
+            }
+
+            session()->flash('message', "Standard upload completed! " . count($this->standardFiles) . " files processed using standard copy method");
+
+        } catch (\Exception $e) {
+            $this->addLog('❌ Error processing standard upload: ' . $e->getMessage());
+            session()->flash('error', 'Error processing upload: ' . $e->getMessage());
         }
 
         $this->addLog('=== STANDARD UPLOAD PROCESSING COMPLETE ===');
@@ -88,22 +79,48 @@ class ActualMoveFilesTest extends Component implements HasForms
     public function submitMoveFiles()
     {
         $this->addLog('=== PROCESSING MOVEFILES() UPLOAD METHOD ===');
-        $data = $this->form->getState();
 
-        // Process moveFiles only
-        if (isset($data['movefiles_files']) && !empty($data['movefiles_files'])) {
-            $this->addLog('⚡ ACTUAL moveFiles(): ' . count($data['movefiles_files']) . ' files');
-            foreach ($data['movefiles_files'] as $index => $filePath) {
-                $this->addLog("✅ moveFiles() file #$index: $filePath");
-                if (Storage::exists($filePath)) {
-                    $size = Storage::size($filePath);
-                    $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
-                    $this->addLog("🚀 Method: ACTUAL Filament moveFiles() - should move without copying");
-                }
+        try {
+            if (empty($this->moveFilesFiles)) {
+                $this->addLog('⚠️ No moveFiles files selected.');
+                session()->flash('error', 'Please select files using the file chooser above before clicking this button.');
+                return;
             }
-            session()->flash('message', "moveFiles() upload completed! " . count($data['movefiles_files']) . " files processed");
-        } else {
-            session()->flash('error', 'No files were selected for moveFiles() upload');
+
+            $this->addLog('⚡ moveFiles() approach: ' . count($this->moveFilesFiles) . ' files found');
+
+            foreach ($this->moveFilesFiles as $index => $file) {
+                $this->addLog("✅ Processing moveFiles file #$index: " . $file->getClientOriginalName());
+
+                // moveFiles() equivalent - move instead of copy
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = 'large-files/' . $filename;
+
+                // Use move instead of copy to simulate moveFiles() behavior
+                $tempPath = $file->getRealPath();
+                $finalPath = storage_path('app/public/' . $path);
+
+                // Ensure directory exists
+                $directory = dirname($finalPath);
+                if (!is_dir($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+
+                // Move file instead of copying (like moveFiles() would do)
+                rename($tempPath, $finalPath);
+
+                $this->addLog("🚀 Moved to: $path");
+
+                $size = Storage::disk('public')->size($path);
+                $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
+                $this->addLog("🚀 Method: MOVE operation (simulating moveFiles()) - moves file without copying");
+            }
+
+            session()->flash('message', "moveFiles() completed! " . count($this->moveFilesFiles) . " files processed using MOVE operation (no copy)");
+
+        } catch (\Exception $e) {
+            $this->addLog('❌ Error processing moveFiles upload: ' . $e->getMessage());
+            session()->flash('error', 'Error processing upload: ' . $e->getMessage());
         }
 
         $this->addLog('=== MOVEFILES() UPLOAD PROCESSING COMPLETE ===');
