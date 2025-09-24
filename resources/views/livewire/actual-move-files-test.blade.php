@@ -36,8 +36,7 @@
         </div>
     @endif
 
-    <form>
-        <div class="form-grid">
+    <div class="form-grid">
             <!-- Standard Filament Upload -->
             <div class="upload-section">
                 <h3>📁 Standard Filament Upload</h3>
@@ -100,7 +99,6 @@
                 </div>
             </div>
         </div>
-    </form>
 
     @if (!empty($logs))
         <div class="logs-section">

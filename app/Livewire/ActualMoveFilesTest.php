@@ -136,8 +136,6 @@ class ActualMoveFilesTest extends Component
 
     public function render()
     {
-        return view('livewire.actual-move-files-test')
-            ->layout('components.layouts.app')
-            ->layoutData(['title' => 'ACTUAL Filament moveFiles() Test']);
+        return view('livewire.actual-move-files-test');
     }
 }
