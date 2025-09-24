@@ -12,8 +12,8 @@ class ActualMoveFilesTest extends Component
 {
     use WithFileUploads;
 
-    public $standardFiles;
-    public $moveFilesFiles;
+    public $standardFiles = null;
+    public $moveFilesFiles = null;
     public array $logs = [];
 
     public function mount(): void
