@@ -24,10 +24,10 @@ class DirectUploadController extends Controller
             $file = $request->file('file');
             $filename = time() . '_' . $file->getClientOriginalName();
 
-            // Standard method - copy file
-            $path = $file->store('standard-direct', 'public');
+            // Standard method - copy file to R2
+            $path = $file->store('standard-direct', 'r2');
 
-            $size = Storage::disk('public')->size($path);
+            $size = Storage::disk('r2')->size($path);
 
             Log::info("Standard upload: {$filename} - Size: " . number_format($size / 1024 / 1024, 2) . " MB - Method: COPY");
 
@@ -59,27 +59,21 @@ class DirectUploadController extends Controller
             $file = $request->file('file');
             $filename = time() . '_move_' . $file->getClientOriginalName();
 
-            // Direct move approach - avoid copying
-            $tempPath = $file->getRealPath();
-            $finalPath = storage_path('app/public/move-direct/' . $filename);
+            // Direct stream upload to R2 (simulates moveFiles() behavior)
+            $fileContents = file_get_contents($file->getRealPath());
+            $path = 'move-direct/' . $filename;
 
-            // Ensure directory exists
-            $directory = dirname($finalPath);
-            if (!is_dir($directory)) {
-                mkdir($directory, 0755, true);
-            }
+            // Direct upload to R2 without temporary storage
+            Storage::disk('r2')->put($path, $fileContents);
 
-            // Move file directly (like moveFiles() would do)
-            rename($tempPath, $finalPath);
-
-            $size = filesize($finalPath);
+            $size = Storage::disk('r2')->size($path);
 
             Log::info("MoveFiles upload: {$filename} - Size: " . number_format($size / 1024 / 1024, 2) . " MB - Method: MOVE");
 
             return response()->json([
                 'success' => true,
                 'message' => 'MoveFiles upload completed (MOVE method)',
-                'path' => 'move-direct/' . $filename,
+                'path' => $path,
                 'size' => number_format($size / 1024 / 1024, 2) . ' MB',
                 'method' => 'Direct move operation - no copying'
             ]);

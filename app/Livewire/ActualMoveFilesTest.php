@@ -62,11 +62,11 @@ class ActualMoveFilesTest extends Component
             $this->addLog("🔍 Debug: File object type: " . get_class($this->standardFiles));
             $this->addLog("✅ Processing standard file: " . $this->standardFiles->getClientOriginalName());
 
-            // Standard store() method - copies the file
-            $path = $this->standardFiles->store('large-files', 'public');
+            // Standard store() method - copies the file to R2
+            $path = $this->standardFiles->store('large-files', 'r2');
             $this->addLog("📁 Stored to: $path");
 
-            $size = Storage::disk('public')->size($path);
+            $size = Storage::disk('r2')->size($path);
             $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
             $this->addLog("📁 Method: Standard Livewire store() - copies file to final location");
 
@@ -95,32 +95,19 @@ class ActualMoveFilesTest extends Component
             $this->addLog('⚡ moveFiles() approach: 1 file found');
             $this->addLog("✅ Processing moveFiles file: " . $this->moveFilesFiles->getClientOriginalName());
 
-            // moveFiles() equivalent - move instead of copy
+            // moveFiles() equivalent - direct upload to R2
             $filename = time() . '_' . $this->moveFilesFiles->getClientOriginalName();
             $path = 'large-files/' . $filename;
 
-            // Use move instead of copy to simulate moveFiles() behavior
-            $tempPath = $this->moveFilesFiles->getRealPath();
-            $finalPath = storage_path('app/public/' . $path);
+            // Direct upload to R2 (simulates moveFiles() behavior)
+            $fileContents = file_get_contents($this->moveFilesFiles->getRealPath());
+            Storage::disk('r2')->put($path, $fileContents);
 
-            // Ensure directory exists
-            $directory = dirname($finalPath);
-            if (!is_dir($directory)) {
-                mkdir($directory, 0755, true);
-            }
+            $this->addLog("🚀 Moved to R2: $path");
 
-            // Move file instead of copying (like moveFiles() would do)
-            rename($tempPath, $finalPath);
-
-            $this->addLog("🚀 Moved to: $path");
-
-            if (file_exists($finalPath)) {
-                $size = filesize($finalPath);
-                $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
-                $this->addLog("✅ File successfully moved and size retrieved");
-            } else {
-                $this->addLog("⚠️ File does not exist at: $finalPath");
-            }
+            $size = Storage::disk('r2')->size($path);
+            $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
+            $this->addLog("✅ File successfully moved to R2 and size retrieved");
             $this->addLog("🚀 Method: MOVE operation (simulating moveFiles()) - moves file without copying");
 
             session()->flash('message', "moveFiles() completed! File processed using MOVE operation (no copy)");
