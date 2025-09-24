@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MoveFilesTestController;
 use App\Http\Controllers\DirectUploadController;
+use App\Http\Controllers\MultipartUploadController;
 use App\Livewire\SimpleTest;
 use App\Livewire\MinimalUploadTest;
 use App\Livewire\SuperMinimalTest;
@@ -19,6 +20,11 @@ Route::get('/real', RealMoveFilesTest::class);
 Route::get('/direct', [DirectUploadController::class, 'index']);
 Route::post('/upload-standard', [DirectUploadController::class, 'uploadStandard']);
 Route::post('/upload-movefiles', [DirectUploadController::class, 'uploadMoveFiles']);
+Route::get('/multipart', [MultipartUploadController::class, 'index']);
+Route::post('/multipart/initiate', [MultipartUploadController::class, 'initiateUpload']);
+Route::post('/multipart/upload-chunk', [MultipartUploadController::class, 'uploadChunk']);
+Route::post('/multipart/complete', [MultipartUploadController::class, 'completeUpload']);
+Route::post('/multipart/abort', [MultipartUploadController::class, 'abortUpload']);
 Route::get('/movefiles-test', [MoveFilesTestController::class, 'index'])->name('movefiles-test');
 
 // Temporary route to check PHP limits
