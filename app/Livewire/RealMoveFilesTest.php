@@ -32,7 +32,7 @@ class RealMoveFilesTest extends Component implements HasForms
                     ->schema([
                         FileUpload::make('standardFiles')
                             ->label('Standard Upload')
-                            ->disk('r2')
+                            ->disk('public')
                             ->directory('standard-uploads')
                             ->maxSize(50000) // 50MB
                             ->acceptedFileTypes(['*'])
@@ -44,7 +44,7 @@ class RealMoveFilesTest extends Component implements HasForms
                     ->schema([
                         FileUpload::make('moveFiles')
                             ->label('MoveFiles Upload')
-                            ->disk('r2')
+                            ->disk('public')
                             ->directory('move-uploads')
                             ->moveFiles() // This is the key method!
                             ->maxSize(2000000) // 2GB

@@ -24,10 +24,10 @@ class DirectUploadController extends Controller
             $file = $request->file('file');
             $filename = time() . '_' . $file->getClientOriginalName();
 
-            // Standard method - copy file to R2
-            $path = $file->store('standard-direct', 'r2');
+            // Standard method - copy file
+            $path = $file->store('standard-direct', 'public');
 
-            $size = Storage::disk('r2')->size($path);
+            $size = Storage::disk('public')->size($path);
 
             Log::info("Standard upload: {$filename} - Size: " . number_format($size / 1024 / 1024, 2) . " MB - Method: COPY");
 
@@ -59,14 +59,14 @@ class DirectUploadController extends Controller
             $file = $request->file('file');
             $filename = time() . '_move_' . $file->getClientOriginalName();
 
-            // Direct stream upload to R2 (simulates moveFiles() behavior)
+            // Direct stream upload (simulates moveFiles() behavior)
             $fileContents = file_get_contents($file->getRealPath());
             $path = 'move-direct/' . $filename;
 
-            // Direct upload to R2 without temporary storage
-            Storage::disk('r2')->put($path, $fileContents);
+            // Direct upload without temporary storage
+            Storage::disk('public')->put($path, $fileContents);
 
-            $size = Storage::disk('r2')->size($path);
+            $size = Storage::disk('public')->size($path);
 
             Log::info("MoveFiles upload: {$filename} - Size: " . number_format($size / 1024 / 1024, 2) . " MB - Method: MOVE");
 

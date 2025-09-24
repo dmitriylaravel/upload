@@ -62,11 +62,11 @@ class ActualMoveFilesTest extends Component
             $this->addLog("🔍 Debug: File object type: " . get_class($this->standardFiles));
             $this->addLog("✅ Processing standard file: " . $this->standardFiles->getClientOriginalName());
 
-            // Standard store() method - copies the file to R2
-            $path = $this->standardFiles->store('large-files', 'r2');
+            // Standard store() method - copies the file
+            $path = $this->standardFiles->store('large-files', 'public');
             $this->addLog("📁 Stored to: $path");
 
-            $size = Storage::disk('r2')->size($path);
+            $size = Storage::disk('public')->size($path);
             $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
             $this->addLog("📁 Method: Standard Livewire store() - copies file to final location");
 
@@ -95,19 +95,19 @@ class ActualMoveFilesTest extends Component
             $this->addLog('⚡ moveFiles() approach: 1 file found');
             $this->addLog("✅ Processing moveFiles file: " . $this->moveFilesFiles->getClientOriginalName());
 
-            // moveFiles() equivalent - direct upload to R2
+            // moveFiles() equivalent - direct upload
             $filename = time() . '_' . $this->moveFilesFiles->getClientOriginalName();
             $path = 'large-files/' . $filename;
 
-            // Direct upload to R2 (simulates moveFiles() behavior)
+            // Direct upload (simulates moveFiles() behavior)
             $fileContents = file_get_contents($this->moveFilesFiles->getRealPath());
-            Storage::disk('r2')->put($path, $fileContents);
+            Storage::disk('public')->put($path, $fileContents);
 
-            $this->addLog("🚀 Moved to R2: $path");
+            $this->addLog("🚀 Moved to: $path");
 
-            $size = Storage::disk('r2')->size($path);
+            $size = Storage::disk('public')->size($path);
             $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
-            $this->addLog("✅ File successfully moved to R2 and size retrieved");
+            $this->addLog("✅ File successfully moved and size retrieved");
             $this->addLog("🚀 Method: MOVE operation (simulating moveFiles()) - moves file without copying");
 
             session()->flash('message', "moveFiles() completed! File processed using MOVE operation (no copy)");
