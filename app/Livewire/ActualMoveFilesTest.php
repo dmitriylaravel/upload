@@ -114,8 +114,13 @@ class ActualMoveFilesTest extends Component
 
             $this->addLog("🚀 Moved to: $path");
 
-            $size = Storage::disk('public')->size($path);
-            $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
+            if (file_exists($finalPath)) {
+                $size = filesize($finalPath);
+                $this->addLog("📊 Size: " . number_format($size / 1024 / 1024, 2) . " MB");
+                $this->addLog("✅ File successfully moved and size retrieved");
+            } else {
+                $this->addLog("⚠️ File does not exist at: $finalPath");
+            }
             $this->addLog("🚀 Method: MOVE operation (simulating moveFiles()) - moves file without copying");
 
             session()->flash('message', "moveFiles() completed! File processed using MOVE operation (no copy)");
