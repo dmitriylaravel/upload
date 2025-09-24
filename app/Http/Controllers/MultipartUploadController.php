@@ -29,11 +29,30 @@ class MultipartUploadController extends Controller
 
         try {
             $disk = Storage::disk('public');
-            $adapter = $disk->getAdapter();
+            $config = config('filesystems.disks.public');
 
-            // Get S3 client from the adapter
-            $s3Client = $adapter->getClient();
-            $bucket = $adapter->getBucket();
+            // Check if we're using S3/R2 or local storage
+            if ($config['driver'] !== 's3') {
+                throw new \Exception('Multipart upload requires S3/R2 storage. Current driver: ' . $config['driver']);
+            }
+
+            // Create S3 client directly with config
+            $s3Client = new S3Client([
+                'version' => 'latest',
+                'region' => $config['region'] ?? 'auto',
+                'endpoint' => $config['endpoint'] ?? null,
+                'use_path_style_endpoint' => $config['use_path_style_endpoint'] ?? false,
+                'credentials' => [
+                    'key' => $config['key'] ?? null,
+                    'secret' => $config['secret'] ?? null,
+                ],
+            ]);
+
+            $bucket = $config['bucket'] ?? null;
+
+            if (!$bucket) {
+                throw new \Exception('S3 bucket not configured');
+            }
 
             $key = 'multipart-uploads/' . time() . '_' . Str::slug(pathinfo($request->filename, PATHINFO_FILENAME)) . '.' . pathinfo($request->filename, PATHINFO_EXTENSION);
 

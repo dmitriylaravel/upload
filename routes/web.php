@@ -37,3 +37,13 @@ Route::get('/php-info', function() {
         'max_file_uploads' => ini_get('max_file_uploads'),
     ]);
 });
+
+// Debug route to check disk configuration
+Route::get('/disk-info', function() {
+    return response()->json([
+        'public_disk_config' => config('filesystems.disks.public'),
+        'default_disk' => config('filesystems.default'),
+        'laravel_cloud_config' => $_SERVER['LARAVEL_CLOUD_DISK_CONFIG'] ?? 'Not set',
+        'environment' => app()->environment(),
+    ]);
+});

@@ -15,4 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->withBootstrappers([
+        function ($app) {
+            // Configure Laravel Cloud disks if available
+            if (class_exists('Illuminate\Foundation\Cloud')) {
+                \Illuminate\Foundation\Cloud::configureDisks($app);
+            }
+        }
+    ])
+    ->create();
